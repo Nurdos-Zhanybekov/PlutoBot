@@ -4,11 +4,16 @@ import io.project.plutobot.config.BotConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 @Slf4j
@@ -16,9 +21,27 @@ import java.util.Properties;
 public class TelegramBot extends TelegramLongPollingBot{
 
     private final BotConfig config;
+    private static final String HELP_TEXT = "Help yourself yourself";
 
     public TelegramBot(BotConfig config){
         this.config = config;
+        List<BotCommand> listOfCommands = new ArrayList<>();
+        listOfCommands.add(new BotCommand("/start", "get started"));
+        listOfCommands.add(new BotCommand("/bekzhan", "mark bekzhan"));
+        listOfCommands.add(new BotCommand("/emir", "mark emir"));
+        listOfCommands.add(new BotCommand("/sultan", "mark sultan"));
+        listOfCommands.add(new BotCommand("/nurdos", "mark nurdos"));
+        listOfCommands.add(new BotCommand("/kidalastat", "show statistic"));
+        listOfCommands.add(new BotCommand("/mydata", "get your data stored"));
+        listOfCommands.add(new BotCommand("/deletedata", "delete my data"));
+        listOfCommands.add(new BotCommand("/help", "how to use this bot"));
+        listOfCommands.add(new BotCommand("/settings", "set your prefences"));
+
+        try{
+            this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
+        }catch (TelegramApiException e){
+            log.error("Error setting bot's command list: " + e.getMessage());
+        }
     }
 
     @Override
@@ -37,98 +60,59 @@ public class TelegramBot extends TelegramLongPollingBot{
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
-            Properties properties = new Properties();
-            try(FileInputStream fileInputStream = new FileInputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
-                properties.load(fileInputStream);
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            Properties properties = loadProperties();
 
             switch (messageText){
                 case "/start":
                     startCommandReceived(chatId, update.getMessage().getFrom().getFirstName());
                     break;
-                case "kawasaki kidala":
+                case "/bekzhan":
+                    try {
+                        int countBekzhan = incrementValue(properties, "bekzhan");
 
-                    int bekzhan = Integer.parseInt(properties.getProperty("beka", "0"));
-                    bekzhan++;
-                    properties.setProperty("beka", String.valueOf(bekzhan));
-
-                    try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
-                        properties.store(fileOutputStream, "File is modified");
-                    }catch (IOException e){
-                        System.out.println("Error: " + e.getMessage());
-                    }
-
-                    if (bekzhan == 1) {
-                        sendMessage(chatId, "Bekzhan kinul " + bekzhan + " raz");
-                    }else{
-                        sendMessage(chatId, "Bekzhan kinul " + bekzhan + " raza");
+                        sendMessage(chatId, "Количество киданий Бекжана: " + countBekzhan);
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
                     }
                     break;
-                case "@Nea006 kidala":
+                case "/sultan":
+                    try {
+                        int countSultan = incrementValue(properties, "sultan");
 
-                    int sultan = Integer.parseInt(properties.getProperty("sultan", "0"));
-                    sultan++;
-                    properties.setProperty("sultan", String.valueOf(sultan));
-
-                    try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
-                        properties.store(fileOutputStream, "File is modified");
-                    }catch (IOException e){
-                        System.out.println("Error: " + e.getMessage());
-                    }
-
-                    if (sultan == 1) {
-                        sendMessage(chatId, "Sultan kinul " + sultan + " raz");
-                    }else{
-                        sendMessage(chatId, "Sultan kinul " + sultan + " raza");
+                        sendMessage(chatId, "Количество киданий Султана: " + countSultan);
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
                     }
                     break;
-                case "@treqter8888 kidala":
+                case "/emir":
+                    try {
+                        int countEmir = incrementValue(properties, "emir");
 
-                    int emir = Integer.parseInt(properties.getProperty("emir", "0"));
-                    emir++;
-                    properties.setProperty("emir", String.valueOf(emir));
-
-                    try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
-                        properties.store(fileOutputStream, "File is modified");
-                    }catch (IOException e){
-                        System.out.println("Error: " + e.getMessage());
-                    }
-
-                    if (emir == 1) {
-                        sendMessage(chatId, "Emir kinul " + emir + " raz");
-                    }else{
-                        sendMessage(chatId, "Emir kinul " + emir + " raza");
+                        sendMessage(chatId, "Количество киданий Эмира: " + countEmir);
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
                     }
                     break;
-                case "@nickname13579 kidala":
+                case "/nurdos":
+                    try {
+                        int countNurdos = incrementValue(properties, "nurdos");
 
-                    int nurdos = Integer.parseInt(properties.getProperty("nurdos", "0"));
-                    nurdos++;
-                    properties.setProperty("nurdos", String.valueOf(nurdos));
-
-                    try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
-                        properties.store(fileOutputStream, "File is modified");
-                    }catch (IOException e){
-                        System.out.println("Error: " + e.getMessage());
-                    }
-
-                    if (nurdos == 1) {
-                        sendMessage(chatId, "Nurdos kinul " + nurdos + " raz");
-                    }else{
-                        sendMessage(chatId, "Nurdos kinul " + nurdos + " raza");
+                        sendMessage(chatId, "Количество киданий Нурдоса: " + countNurdos);
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
                     }
                     break;
-                case "/kidalaStat":
-                    sendMessage(chatId, "Sultan: " + properties.getProperty("sultan") + "\n" +
-                            "Nurdos: " + properties.getProperty("nurdos") + "\n" +
-                            "Emir: " + properties.getProperty("emir") + "\n" +
-                            "Bekzhan: " + properties.getProperty("beka"));
+                case "/kidalastat":
+                    sendMessage(chatId, "Султан: " + properties.getProperty("sultan") + "\n" +
+                            "Нурдос: " + properties.getProperty("nurdos") + "\n" +
+                            "Эмир: " + properties.getProperty("emir") + "\n" +
+                            "Бекжан: " + properties.getProperty("bekzhan"));
+                    break;
+                case "/help":
+                    sendMessage(chatId, HELP_TEXT);
+                    break;
 
                 default:
-                    return;
             }
         }
     }
@@ -152,5 +136,30 @@ public class TelegramBot extends TelegramLongPollingBot{
         }catch (TelegramApiException e){
             log.error("Error occurred: {}", e.getMessage());
         }
+    }
+
+    private Properties loadProperties(){
+        Properties properties = new Properties();
+        try(FileInputStream fileInputStream = new FileInputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
+            properties.load(fileInputStream);
+
+        } catch (IOException e) {
+            log.error("Couldn't read file: {}", e.getMessage());
+        }
+
+        return properties;
+    }
+
+    private int incrementValue(Properties properties, String key) throws FileNotFoundException {
+        int count = Integer.parseInt(properties.getProperty(key, "0")) + 1;
+        properties.setProperty(key, String.valueOf(count));
+
+        try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
+            properties.store(fileOutputStream, "file is updated");
+        }catch (IOException e) {
+            log.error("Couldn't overwrite file: " + e.getMessage());
+        }
+
+        return count;
     }
 }
