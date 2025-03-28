@@ -8,13 +8,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.*;
+import java.util.Properties;
+
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot{
-    private static int sultan = 0;
-    private static int bekzhan = 0;
-    private static int emir = 0;
-    private static int nurdos = 0;
 
     private final BotConfig config;
 
@@ -38,45 +37,98 @@ public class TelegramBot extends TelegramLongPollingBot{
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
+            Properties properties = new Properties();
+            try(FileInputStream fileInputStream = new FileInputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
+                properties.load(fileInputStream);
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
             switch (messageText){
                 case "/start":
                     startCommandReceived(chatId, update.getMessage().getFrom().getFirstName());
                     break;
                 case "kawasaki kidala":
+
+                    int bekzhan = Integer.parseInt(properties.getProperty("beka", "0"));
                     bekzhan++;
+                    properties.setProperty("beka", String.valueOf(bekzhan));
+
+                    try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
+                        properties.store(fileOutputStream, "File is modified");
+                    }catch (IOException e){
+                        System.out.println("Error: " + e.getMessage());
+                    }
+
                     if (bekzhan == 1) {
                         sendMessage(chatId, "Bekzhan kinul " + bekzhan + " raz");
                     }else{
                         sendMessage(chatId, "Bekzhan kinul " + bekzhan + " raza");
                     }
                     break;
+                case "@Nea006 kidala":
+
+                    int sultan = Integer.parseInt(properties.getProperty("sultan", "0"));
+                    sultan++;
+                    properties.setProperty("sultan", String.valueOf(sultan));
+
+                    try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
+                        properties.store(fileOutputStream, "File is modified");
+                    }catch (IOException e){
+                        System.out.println("Error: " + e.getMessage());
+                    }
+
+                    if (sultan == 1) {
+                        sendMessage(chatId, "Sultan kinul " + sultan + " raz");
+                    }else{
+                        sendMessage(chatId, "Sultan kinul " + sultan + " raza");
+                    }
+                    break;
                 case "@treqter8888 kidala":
+
+                    int emir = Integer.parseInt(properties.getProperty("emir", "0"));
                     emir++;
+                    properties.setProperty("emir", String.valueOf(emir));
+
+                    try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
+                        properties.store(fileOutputStream, "File is modified");
+                    }catch (IOException e){
+                        System.out.println("Error: " + e.getMessage());
+                    }
+
                     if (emir == 1) {
                         sendMessage(chatId, "Emir kinul " + emir + " raz");
                     }else{
                         sendMessage(chatId, "Emir kinul " + emir + " raza");
                     }
                     break;
-                case "@Nea006 kidala":
-                    sultan++;
-                    if (sultan == 1) {
-                        sendMessage(chatId, "Sulya kinul " + sultan + " raz");
-                    }else{
-                        sendMessage(chatId, "Sulya kinul " + sultan + " raza");
-                    }
-                    break;
-                case "nickname13579 kidala":
+                case "@nickname13579 kidala":
+
+                    int nurdos = Integer.parseInt(properties.getProperty("nurdos", "0"));
                     nurdos++;
-                    if (sultan == 1) {
-                        sendMessage(chatId, "Svetoi prostil vas " + nurdos + " raz");
+                    properties.setProperty("nurdos", String.valueOf(nurdos));
+
+                    try(FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Public\\PlutoBot\\counter.properties")){
+                        properties.store(fileOutputStream, "File is modified");
+                    }catch (IOException e){
+                        System.out.println("Error: " + e.getMessage());
+                    }
+
+                    if (nurdos == 1) {
+                        sendMessage(chatId, "Nurdos kinul " + nurdos + " raz");
                     }else{
-                        sendMessage(chatId, "Svetoi prostil vas " + nurdos + " raza");
+                        sendMessage(chatId, "Nurdos kinul " + nurdos + " raza");
                     }
                     break;
+                case "/kidalaStat":
+                    sendMessage(chatId, "Sultan: " + properties.getProperty("sultan") + "\n" +
+                            "Nurdos: " + properties.getProperty("nurdos") + "\n" +
+                            "Emir: " + properties.getProperty("emir") + "\n" +
+                            "Bekzhan: " + properties.getProperty("beka"));
+
                 default:
                     return;
-
             }
         }
     }
